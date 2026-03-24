@@ -11,7 +11,6 @@ import {
 	lengthTransformer,
 	writeTransform,
 } from "./framer";
-import type { AuthStore } from "..";
 
 function link<T>(): [ReadableStream<T>, WritableStream<T>] {
 	let readController: ReadableStreamDefaultController<T>;
@@ -56,8 +55,7 @@ export class Connection {
 	rawEpoxy?: BytesWriter;
 
 	constructor(
-		uri: string,
-		private authStore: AuthStore
+		uri: string
 	) {
 		const [processIn, eaglerIn] = link<Buffer>();
 		this.processIn = processIn.getReader();
@@ -108,8 +106,7 @@ export class Connection {
 				return impl.encryptor.transform(b);
 			}).getWriter(),
 			this.url.hostname,
-			this.url.port ? parseInt(this.url.port) : 25565,
-			this.authStore
+			this.url.port ? parseInt(this.url.port) : 25565
 		);
 
 		// epoxy -> process -> (hopefully) eagler task
