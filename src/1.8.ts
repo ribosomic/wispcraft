@@ -141,8 +141,7 @@ export class EaglerProxy {
 		eaglerOut: BytesWriter,
 		epoxyOut: BytesWriter,
 		public serverAddress: string,
-		public serverPort: number,
-		public authStore: AuthStore
+		public serverPort: number
 	) {
 		this.net = epoxyOut;
 		this.eagler = eaglerOut;
@@ -177,15 +176,8 @@ export class EaglerProxy {
 						this.offlineUsername = username;
 
 						let fakelogin = new Packet(Clientbound.EAG_AllowLogin);
-						if (this.authStore.user) {
-							fakelogin.writeString(this.authStore.user.name);
-							fakelogin.writeBytes(
-								this.authStore.user.id.split("").map((x) => parseInt(x))
-							);
-						} else {
-							fakelogin.writeString(this.offlineUsername);
-							fakelogin.writeBytes(offlineUUID(this.offlineUsername));
-						}
+						fakelogin.writeString(this.offlineUsername);
+						fakelogin.writeBytes(offlineUUID(this.offlineUsername));
 						this.eagler.write(fakelogin);
 						return;
 					case Serverbound.EAG_FinishLogin:
@@ -201,11 +193,7 @@ export class EaglerProxy {
 						this.net.write(handshake);
 
 						let loginstart = new Packet(Serverbound.LoginStart);
-						if (this.authStore.user) {
-							loginstart.writeString(this.authStore.user.name);
-						} else {
-							loginstart.writeString(this.offlineUsername);
-						}
+						loginstart.writeString(this.offlineUsername);
 						this.net.write(loginstart);
 						break;
 				}
