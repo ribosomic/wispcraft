@@ -4,7 +4,7 @@ import {
 	EpoxyWebSocketInput,
 } from "@mercuryworkshop/epoxy-tls";
 import { Connection } from ".";
-import { authstore, COMMITHASH, VERSION, wispUrl } from "..";
+import { COMMITHASH, VERSION, wispUrl } from "..";
 import { Buffer } from "../buffer";
 import { epoxyWs } from "./epoxy";
 
@@ -17,7 +17,7 @@ class WispWS extends EventTarget {
 		super();
 
 		this.url = uri;
-		this.inner = new Connection(uri, authstore);
+		this.inner = new Connection(uri);
 		this.readyState = WebSocket.CONNECTING;
 	}
 
