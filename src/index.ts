@@ -1,4 +1,3 @@
-import { getProfile, minecraftAuth, UserInfo } from "./auth";
 import { epoxyFetch, initWisp } from "./connection/epoxy";
 import { makeFakeWebSocket } from "./connection/fakewebsocket";
 
@@ -8,24 +7,6 @@ export const VERSION = self.VERSION;
 export const COMMITHASH = self.COMMITHASH;
 
 export let wispUrl: string;
-
-export type AuthStore = {
-	user: UserInfo | null;
-	yggToken: string;
-	msToken: string;
-};
-
-export type TokenStore = {
-	username: string;
-	token: string;
-	ms: string;
-};
-
-export let authstore: AuthStore = {
-	user: null,
-	yggToken: "",
-	msToken: "",
-};
 
 const nativeFetch = fetch;
 
@@ -47,28 +28,6 @@ try {
 	setWispUrl(wispUrl);
 } catch (e) {
 	console.error(e);
-}
-
-if (localStorage["wispcraft_accounts"]) {
-	const accounts = JSON.parse(
-		localStorage["wispcraft_accounts"]
-	) as TokenStore[];
-	const account = accounts.find(
-		(account) =>
-			account.username === localStorage["wispcraft_last_used_account"]
-	);
-	if (account) {
-		(async () => {
-			try {
-				authstore.msToken = account.ms;
-				authstore.yggToken = account.token;
-				authstore.user = await getProfile(authstore.yggToken);
-			} catch (e) {
-				authstore.yggToken = await minecraftAuth(authstore.msToken);
-				authstore.user = await getProfile(authstore.yggToken);
-			}
-		})();
-	}
 }
 
 // replace websocket with our own
