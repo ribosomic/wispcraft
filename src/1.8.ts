@@ -11,10 +11,6 @@ import {
 	offlineUUID,
 } from "./connection/crypto";
 import { handleSkinCape } from "./skins";
-import "./auth";
-import { joinServer } from "./auth";
-import { VERSION, type AuthStore } from ".";
-// import { authstore } from "./index";
 
 // https://minecraft.wiki/w/Protocol?oldid=2772100
 enum State {
@@ -140,7 +136,6 @@ export class EaglerProxy {
 
 	offlineUsername: string = "";
 	offlineUuid: string = "";
-	isPremium: boolean = false;
 
 	constructor(
 		eaglerOut: BytesWriter,
@@ -341,49 +336,10 @@ export class EaglerProxy {
 						break;
 					case Clientbound.EncryptionRequest:
 						{
-							this.isPremium = true;
-
-							if (this.authStore.user == null) {
-								const reason =
-									"This server requires authentication, but you are not logged in!\n Connect to Wispcraft Settings to log in with Microsoft";
-								let eag = createEagKick(reason);
-								this.eagler.write(eag);
-								return;
-							}
-
-							let serverid = packet.readString();
-							let publicKey = packet.readVariableData();
-							let verifyToken = packet.readVariableData();
-
-							let sharedSecret = makeSharedSecret();
-							let digest = await mchash(
-								new Uint8Array([
-									...new TextEncoder().encode(serverid),
-									...sharedSecret,
-									...publicKey.inner,
-								])
-							);
-
-							const [modulus, exponent] = await loadKey(publicKey.inner);
-							let encrypedSecret = encryptRSA(sharedSecret, modulus, exponent);
-							let encryptedChallenge = encryptRSA(
-								verifyToken.inner,
-								modulus,
-								exponent
-							);
-							await joinServer(
-								this.authStore.yggToken,
-								digest,
-								this.authStore.user.id
-							);
-
-							let response = new Packet(Serverbound.EncryptionResponse);
-							response.writeVariableData(new Buffer(encrypedSecret));
-							response.writeVariableData(new Buffer(encryptedChallenge));
-							this.net.write(response).then(() => {
-								this.encryptor.seed(sharedSecret);
-								this.decryptor.seed(sharedSecret);
-							});
+							const reason =
+								"Premium mode servers are not supported!";
+							let eag = createEagKick(reason);
+							this.eagler.write(eag);
 						}
 						break;
 					default:
