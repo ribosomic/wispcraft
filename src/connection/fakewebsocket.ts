@@ -6,7 +6,6 @@ import {
 import { Connection } from ".";
 import { authstore, COMMITHASH, VERSION, wispUrl } from "..";
 import { Buffer } from "../buffer";
-import { showUI } from "../ui";
 import { epoxyWs } from "./epoxy";
 
 class WispWS extends EventTarget {
