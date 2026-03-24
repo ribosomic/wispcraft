@@ -8,8 +8,6 @@ import { authstore, COMMITHASH, VERSION, wispUrl } from "..";
 import { Buffer } from "../buffer";
 import { showUI } from "../ui";
 import { epoxyWs } from "./epoxy";
-// @ts-ignore typescript sucks
-import wispcraft from "./wispcraft.png";
 
 class WispWS extends EventTarget {
 	inner: Connection;
@@ -96,64 +94,6 @@ class WispWS extends EventTarget {
 		} catch (err) {}
 		this.readyState = WebSocket.CLOSED;
 	}
-}
-class SettingsWS extends EventTarget {
-	readyState: number;
-	constructor() {
-		super();
-		this.readyState = WebSocket.CLOSED;
-		setTimeout(() => {
-			this.dispatchEvent(new Event("open"));
-		});
-	}
-	send(chunk: Uint8Array | ArrayBuffer | string) {
-		if (typeof chunk === "string" && chunk.toLowerCase() === "accept: motd") {
-			const accs = localStorage["wispcraft_accounts"]
-				? JSON.parse(localStorage["wispcraft_accounts"]).length
-				: 0;
-			this.dispatchEvent(
-				new MessageEvent("message", {
-					data: JSON.stringify({
-						name: "Settings",
-						brand: "mercuryworkshop",
-						vers: "wispcraft/" + VERSION,
-						cracked: true,
-						time: Date.now(),
-						uuid: "00000000-0000-0000-0000-000000000000",
-						type: "motd",
-						data: {
-							cache: false,
-							icon: true,
-							online: accs,
-							max: 0,
-							motd: ["Sign in with Microsoft", "Configure Proxy URL"],
-							players: [`Version: ${VERSION}`, `Build: ${COMMITHASH}`],
-						},
-					}),
-				})
-			);
-			fetch(wispcraft)
-				.then((response) => response.blob())
-				.then((blob) => createImageBitmap(blob))
-				.then((image) => {
-					let canvas = new OffscreenCanvas(image.width, image.height);
-					let ctx = canvas.getContext("2d")!;
-					ctx.drawImage(image, 0, 0);
-					let pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-					this.dispatchEvent(
-						new MessageEvent("message", { data: new Uint8Array(pixels) })
-					);
-				});
-		} else {
-			showUI();
-			let str = "Settings UI launched.";
-			let enc = new TextEncoder().encode(str);
-			let eag = Uint8Array.from([0xff, 0x08, enc.length, ...enc]);
-			this.dispatchEvent(new MessageEvent("message", { data: eag }));
-			this.dispatchEvent(new CloseEvent("close"));
-		}
-	}
-	close() {}
 }
 
 class EpoxyWS extends EventTarget {
@@ -410,8 +350,6 @@ export function makeFakeWebSocket(): typeof WebSocket {
 				const ws = new WispWS(uri);
 				ws.start();
 				return ws;
-			} else if (isCustomProtocol && url.hostname == "settings") {
-				return new SettingsWS();
 			} else {
 				return new AutoWS(uri, protos);
 			}
