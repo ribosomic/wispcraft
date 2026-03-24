@@ -11,6 +11,7 @@ import {
 	offlineUUID,
 } from "./connection/crypto";
 import { handleSkinCape } from "./skins";
+import { VERSION } from ".";
 
 // https://minecraft.wiki/w/Protocol?oldid=2772100
 enum State {
